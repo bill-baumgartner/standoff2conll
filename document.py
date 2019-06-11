@@ -5,7 +5,8 @@ import re
 from logging import warn
 
 from itertools import chain
-from common import pairwise, sentence_to_tokens
+from common import pairwise, sentence_to_tokens, split_keep_separator
+from common import FormatError
 from sentencesplit import text_to_sentences
 
 from tagsequence import is_tag, is_start_tag, is_continue_tag, OUT_TAG
