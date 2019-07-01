@@ -16,6 +16,21 @@ TOKENIZATION_REGEXS = OrderedDict([
     ('fine', re.compile(r'([0-9]+|[a-zA-Z]+|[^0-9a-zA-Z])')),
     # Whitespace tokenization
     ('space', re.compile(r'(\S+)')),
+    # CRAFT-specific pre-/suffixes
+    ('craft', re.compile(r'''
+        ( # prefixes
+        \b(?:ante|anti|auto|co|de|dis|dys|extra|hetero|homo|hyper|hypo|
+             inter|intra|juxta|mal|mid|mis|non|over|peri|post|pre|pro|re|
+             sub|super|trans|un|under)
+        | # suffixes
+        less\b
+        | # numbers
+        \d+
+        | # alphabetic
+        [^\W\d_]+
+        | # punctuation, other symbols -- single tokens!
+        [^\w\s]|_
+        )''', re.VERBOSE|re.UNICODE)),
 ])
 
 # adapted from http://docs.python.org/library/itertools.html#recipes
