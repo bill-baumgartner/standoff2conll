@@ -20,7 +20,7 @@ def main():
         line = line.decode('utf8')
         if not line.isspace():
             token, start, end, tag = line.rstrip().split('\t')
-            if tag != 'O-NIL' and tag.startswith('O'):
+            if tag.startswith('O') and tag not in ('O', 'O-NIL'):
                 tag = 'I' + tag[1:]
             line = '{}\t{}\t{}\t{}\n'.format(tag, start, end, token)
         text += line
