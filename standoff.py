@@ -14,8 +14,9 @@ KEEP_SHORTER = 'keep-shorter'
 OVERLAP_RULES = [KEEP_LONGER, KEEP_SHORTER]
 
 FULL_SPAN = 'full-span'
+FIRST_SPAN = 'first-span'
 LAST_SPAN = 'last-span'
-DISCONT_RULES = [FULL_SPAN, LAST_SPAN]
+DISCONT_RULES = [FULL_SPAN, FIRST_SPAN, LAST_SPAN]
 
 class Textbound(object):
     """Textbound annotation in BioNLP ST/brat format.
@@ -61,11 +62,9 @@ class Textbound(object):
         return parsed
 
     @classmethod
-    def _resolve_discontinuous(cls, offsets, text, discont_rule=None):
+    def _resolve_discontinuous(cls, offsets, text, discont_rule=FULL_SPAN):
         # Support for discontinuous annotations is incomplete. Reduce
         # to continous by given rule.
-        if discont_rule is None:
-            discont_rule = FULL_SPAN
         if len(offsets) == 1:
             return offsets, text
         if discont_rule == FULL_SPAN:
@@ -79,11 +78,17 @@ class Textbound(object):
             print >> sys.stderr, 'Resolve discontinuous "%s" to last subspan "%s"' \
             % (text, last_text)
             return [last_off], last_text
+        elif discont_rule == FIRST_SPAN:
+            first_off = offsets[0]
+            first_text = text[:first_off[1]-first_off[0]]
+            print >> sys.stderr, 'Resolve discontinuous "%s" to first subspan "%s"' \
+            % (text, first_text)
+            return [first_off], first_text
         else:
             raise ValueError('unknown rule to resolve discontinuous')
 
     @classmethod
-    def from_str(cls, string, discont_rule=None):
+    def from_str(cls, string, discont_rule=FULL_SPAN):
         try:
             id_, type_offsets, text = string.split('\t')
             type_, offsets = type_offsets.split(' ', 1)
@@ -96,7 +101,7 @@ class Textbound(object):
             start, end = offsets[0]
             ann = cls(id_, type_, start, end, text)
             ann.skip_validation = (was_discontinuous and
-                                   discont_rule != LAST_SPAN)
+                                   discont_rule == FULL_SPAN)
             return ann
         except ValueError, e:
             raise FormatError('Standoff: failed to parse %s' % string)
@@ -120,7 +125,7 @@ def parse_textbounds(input_, discont_rule=None):
         if not TEXTBOUND_LINE_RE.search(l):
             continue
 
-        textbounds.append(Textbound.from_str(l, discont_rule))
+        textbounds.append(Textbound.from_str(l, discont_rule or FULL_SPAN))
 
     return textbounds
 
