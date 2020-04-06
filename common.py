@@ -1,7 +1,8 @@
 import re
 
 from collections import OrderedDict
-from itertools import chain, tee, izip
+from itertools import chain, tee
+from functools import reduce
 
 class FormatError(Exception):
     pass
@@ -11,9 +12,9 @@ class FormatError(Exception):
 TOKENIZATION_REGEXS = OrderedDict([
     # NERsuite-like tokenization: alnum sequences preserved as single
     # tokens, rest are single-character tokens.
-    ('default', re.compile(r'([0-9a-zA-Z]+|[^0-9a-zA-Z])')),
+    ('default', re.compile(r'([^\W_]+|.)')),
     # Finer-grained tokenization: also split alphabetical from numeric.
-    ('fine', re.compile(r'([0-9]+|[a-zA-Z]+|[^0-9a-zA-Z])')),
+    ('fine', re.compile(r'([0-9]+|[^\W0-9_]+|.)')),
     # Whitespace tokenization
     ('space', re.compile(r'(\S+)')),
 ])
@@ -24,9 +25,9 @@ def pairwise(iterable, include_last=False):
     a, b = tee(iterable)
     next(b, None)
     if not include_last:
-        return izip(a, b)
+        return list(zip(a, b))
     else:
-        return izip(a, chain(b, (None, )))
+        return list(zip(a, chain(b, (None, ))))
 
 # from http://programmaticallyspeaking.com/split-on-separator-but-keep-the-separator-in-python.html
 def split_keep_separator(s, sep='\n'):
